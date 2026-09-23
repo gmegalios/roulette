@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Roulette Winnings</title>
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="hero" aria-labelledby="page-title">
+        <div>
+          <p class="eyebrow">Daily roulette tracker</p>
+          <h1 id="page-title">Roulette Winnings</h1>
+        </div>
+        <div class="wheel-mark" aria-hidden="true">
+          <span></span>
+        </div>
+      </section>
+
+      <section class="stats" aria-label="Winnings summary">
+        <article>
+          <span>Total</span>
+          <strong id="totalAmount">$0.00</strong>
+        </article>
+        <article>
+          <span>This month</span>
+          <strong id="monthAmount">$0.00</strong>
+        </article>
+        <article>
+          <span>Best day</span>
+          <strong id="bestDay">$0.00</strong>
+        </article>
+      </section>
+
+      <section class="chart-panel" aria-labelledby="chart-title">
+        <div class="chart-head">
+          <div>
+            <p class="eyebrow">Last 7 days</p>
+            <h2 id="chart-title">Wins and losses</h2>
+          </div>
+          <strong id="weekAmount">$0.00</strong>
+        </div>
+        <div id="weekChart" class="week-chart" aria-label="Daily wins and losses for the last seven days"></div>
+      </section>
+
+      <section class="tracker-grid">
+        <form id="entryForm" class="entry-form">
+          <h2>Add today</h2>
+          <label>
+            Date
+            <input id="dateInput" name="date" type="date" required>
+          </label>
+          <label>
+            Win or loss
+            <input id="amountInput" name="amount" type="number" step="0.01" placeholder="125.00" required>
+          </label>
+          <label>
+            Note
+            <input id="noteInput" name="note" maxlength="140" placeholder="Table, mood, strategy">
+          </label>
+          <button type="submit">Save entry</button>
+          <p id="formMessage" class="form-message" role="status"></p>
+        </form>
+
+        <section class="history" aria-labelledby="history-title">
+          <div class="history-head">
+            <div>
+              <p class="eyebrow">Plain text saved</p>
+              <h2 id="history-title">History</h2>
+            </div>
+            <button id="refreshButton" class="ghost-button" type="button">Refresh</button>
+          </div>
+          <div id="emptyState" class="empty-state">
+            Add your first roulette result and it will appear here.
+          </div>
+          <ol id="entryList" class="entry-list"></ol>
+        </section>
+      </section>
+    </main>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
