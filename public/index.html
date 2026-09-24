@@ -36,10 +36,18 @@
       <section class="chart-panel" aria-labelledby="chart-title">
         <div class="chart-head">
           <div>
-            <p class="eyebrow">Last 7 days</p>
+            <p id="weekRange" class="eyebrow">Last 7 days</p>
             <h2 id="chart-title">Wins and losses</h2>
           </div>
-          <strong id="weekAmount">$0.00</strong>
+          <div class="chart-actions">
+            <span class="goal-pill">Goal $20/day</span>
+            <strong id="weekAmount">$0.00</strong>
+            <div class="week-buttons" aria-label="Change chart week">
+              <button id="prevWeekButton" class="icon-button" type="button" title="Previous week" aria-label="Previous week">&lt;</button>
+              <button id="todayWeekButton" class="ghost-button" type="button">This week</button>
+              <button id="nextWeekButton" class="icon-button" type="button" title="Next week" aria-label="Next week">&gt;</button>
+            </div>
+          </div>
         </div>
         <div id="weekChart" class="week-chart" aria-label="Daily wins and losses for the last seven days"></div>
       </section>
@@ -78,6 +86,38 @@
         </section>
       </section>
     </main>
+
+    <div id="sweetAlert" class="sweet-alert" aria-live="polite" aria-hidden="true">
+      <div class="sweet-alert-box" role="status">
+        <span id="sweetAlertType"></span>
+        <strong id="sweetAlertTitle"></strong>
+        <p id="sweetAlertText"></p>
+      </div>
+    </div>
+
+    <div id="dayModal" class="modal-backdrop" aria-hidden="true">
+      <form id="dayEditForm" class="modal-card" role="dialog" aria-modal="true" aria-labelledby="dayEditTitle">
+        <div class="modal-head">
+          <div>
+            <p id="dayEditDate" class="eyebrow">Edit day</p>
+            <h2 id="dayEditTitle">Daily total</h2>
+          </div>
+          <button id="closeDayModal" class="delete-button" type="button" aria-label="Close editor">X</button>
+        </div>
+        <label>
+          Day total
+          <input id="dayAmountInput" type="number" step="0.01" required>
+        </label>
+        <label>
+          Note
+          <input id="dayNoteInput" maxlength="140" placeholder="Edited from the chart">
+        </label>
+        <div class="modal-actions">
+          <button class="ghost-button" id="clearDayButton" type="button">Clear day</button>
+          <button type="submit">Save day</button>
+        </div>
+      </form>
+    </div>
 
     <script src="/app.js"></script>
   </body>

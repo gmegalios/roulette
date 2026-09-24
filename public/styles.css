@@ -150,10 +150,45 @@ label {
   margin-bottom: 16px;
 }
 
-.chart-head strong {
+.chart-actions {
+  display: grid;
+  justify-items: end;
+  gap: 10px;
+}
+
+.chart-actions strong {
   color: var(--gold);
   font-size: clamp(1.35rem, 4vw, 2.1rem);
   white-space: nowrap;
+}
+
+.goal-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 10px;
+  color: #150d05;
+  border-radius: 999px;
+  background: var(--gold);
+  font-size: 0.78rem;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.week-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.icon-button {
+  width: 40px;
+  min-height: 40px;
+  padding: 0;
+}
+
+.icon-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
 }
 
 .week-chart {
@@ -164,14 +199,27 @@ label {
 }
 
 .chart-day {
+  appearance: none;
   display: grid;
   grid-template-rows: 1fr auto auto;
   gap: 8px;
   min-width: 0;
+  min-height: 0;
+  padding: 0;
+  color: inherit;
+  border: 0;
+  background: transparent;
   text-align: center;
 }
 
+.chart-day:hover .chart-track,
+.chart-day:focus-visible .chart-track {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(241, 199, 91, 0.14);
+}
+
 .chart-track {
+  position: relative;
   display: grid;
   grid-template-rows: 1fr 1fr;
   align-items: end;
@@ -182,6 +230,21 @@ label {
   background:
     linear-gradient(to bottom, transparent calc(50% - 1px), rgba(255, 255, 255, 0.2) calc(50% - 1px), rgba(255, 255, 255, 0.2) calc(50% + 1px), transparent calc(50% + 1px)),
     rgba(255, 255, 255, 0.055);
+}
+
+.chart-goal-line {
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  z-index: 1;
+  height: 1px;
+  color: var(--gold);
+  border-top: 1px dashed rgba(241, 199, 91, 0.75);
+  font-size: 0.64rem;
+  font-weight: 900;
+  line-height: 1;
+  text-align: right;
+  pointer-events: none;
 }
 
 .chart-bar {
@@ -198,6 +261,11 @@ label {
   box-shadow: 0 8px 24px rgba(241, 199, 91, 0.2);
 }
 
+.chart-day.goal-met .chart-bar.win {
+  background: linear-gradient(180deg, #b8f08a, #57d37a);
+  box-shadow: 0 8px 28px rgba(87, 211, 122, 0.22);
+}
+
 .chart-bar.loss {
   align-self: start;
   background: linear-gradient(180deg, #ff8490, var(--red));
@@ -210,11 +278,106 @@ label {
   white-space: nowrap;
 }
 
-.chart-day > span {
+.chart-label {
   color: var(--muted);
   font-size: 0.78rem;
   font-weight: 800;
   white-space: nowrap;
+}
+
+.sweet-alert {
+  position: fixed;
+  top: 18px;
+  right: 18px;
+  z-index: 20;
+  width: min(360px, calc(100% - 36px));
+  opacity: 0;
+  transform: translateY(-18px);
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.sweet-alert.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.sweet-alert-box {
+  display: grid;
+  gap: 8px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(8, 23, 21, 0.96);
+  box-shadow: var(--shadow);
+}
+
+.sweet-alert-box span {
+  width: max-content;
+  padding: 4px 8px;
+  border-radius: 999px;
+  color: #150d05;
+  background: var(--gold);
+  font-size: 0.68rem;
+  font-weight: 900;
+}
+
+.sweet-alert.loss .sweet-alert-box span {
+  color: var(--ink);
+  background: var(--red);
+}
+
+.sweet-alert.neutral .sweet-alert-box span {
+  color: var(--ink);
+  background: var(--felt-light);
+}
+
+.sweet-alert-box strong {
+  font-size: 1.1rem;
+}
+
+.sweet-alert-box p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(0, 0, 0, 0.58);
+}
+
+.modal-backdrop.visible {
+  display: flex;
+}
+
+.modal-card {
+  display: grid;
+  gap: 16px;
+  width: min(440px, 100%);
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(8, 23, 21, 0.98);
+  box-shadow: var(--shadow);
+}
+
+.modal-head,
+.modal-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.modal-actions {
+  justify-content: flex-end;
 }
 
 .tracker-grid {
@@ -401,8 +564,16 @@ button:hover {
     font-size: 0.74rem;
   }
 
-  .chart-day > span {
+  .chart-label {
     font-size: 0.68rem;
+  }
+
+  .week-buttons {
+    width: 100%;
+  }
+
+  .week-buttons .ghost-button {
+    flex: 1;
   }
 
   .entry-item {
@@ -438,9 +609,22 @@ button:hover {
     flex-direction: column;
   }
 
+  .chart-actions {
+    width: 100%;
+    justify-items: stretch;
+  }
+
   .week-chart {
     overflow-x: auto;
     grid-template-columns: repeat(7, minmax(68px, 1fr));
     padding-bottom: 4px;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .modal-actions button {
+    width: 100%;
   }
 }

@@ -43,3 +43,12 @@ Entries are saved in:
 ```text
 data/winnings.txt
 ```
+
+## Features
+
+- Add daily roulette wins or losses.
+- See totals for all time, this month, and best day.
+- Browse the chart by week with previous and next controls.
+- Click any chart day to edit that day's total.
+- Track the daily goal of `$20`.
+- Get playful alerts for wins, losses, chart edits, and clear days.
