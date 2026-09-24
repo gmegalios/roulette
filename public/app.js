@@ -16,6 +16,8 @@ const weekAmount = document.querySelector("#weekAmount");
 const weekChart = document.querySelector("#weekChart");
 const weekRange = document.querySelector("#weekRange");
 const chartTitle = document.querySelector("#chart-title");
+const weekTabButton = document.querySelector("#weekTabButton");
+const dayTabButton = document.querySelector("#dayTabButton");
 const backWeekButton = document.querySelector("#backWeekButton");
 const prevWeekButton = document.querySelector("#prevWeekButton");
 const todayWeekButton = document.querySelector("#todayWeekButton");
@@ -195,10 +197,20 @@ function svgElement(name, attributes = {}) {
   return element;
 }
 
+function setChartTabs(mode, date = today()) {
+  const isDay = mode === "day";
+  weekTabButton.classList.toggle("active", !isDay);
+  dayTabButton.classList.toggle("active", isDay);
+  weekTabButton.setAttribute("aria-selected", String(!isDay));
+  dayTabButton.setAttribute("aria-selected", String(isDay));
+  dayTabButton.textContent = date === today() ? "Today" : "Day";
+}
+
 function renderWeekChart(entries) {
   selectedChartDay = "";
   weekChart.classList.remove("day-mode");
   chartTitle.textContent = "Profit line";
+  setChartTabs("week");
   backWeekButton.hidden = true;
   prevWeekButton.hidden = false;
   todayWeekButton.hidden = false;
@@ -375,6 +387,7 @@ function renderWeekChart(entries) {
 function renderDayChart(entries, date) {
   selectedChartDay = date;
   chartTitle.textContent = "Day detail";
+  setChartTabs("day", date);
   backWeekButton.hidden = false;
   prevWeekButton.hidden = true;
   todayWeekButton.hidden = true;
@@ -712,6 +725,16 @@ function closeModal() {
 
 form.addEventListener("submit", saveEntry);
 refreshButton.addEventListener("click", loadEntries);
+
+weekTabButton.addEventListener("click", () => {
+  selectedChartDay = "";
+  weekChart.classList.remove("day-mode");
+  renderWeekChart(currentEntries);
+});
+
+dayTabButton.addEventListener("click", () => {
+  zoomToDay(today());
+});
 
 prevWeekButton.addEventListener("click", () => {
   selectedChartDay = "";
