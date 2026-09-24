@@ -501,13 +501,23 @@ button:hover {
   color: #ff7784;
 }
 
+.entry-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.edit-button,
 .delete-button {
-  width: 38px;
   min-height: 38px;
-  padding: 0;
+  padding: 0 12px;
   color: var(--ink);
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.08);
+}
+
+.delete-button {
+  width: 38px;
+  padding: 0;
 }
 
 .empty-state {
@@ -568,7 +578,7 @@ button:hover {
     grid-template-columns: 1fr auto;
   }
 
-  .delete-button {
+  .entry-actions {
     grid-column: 2;
   }
 }

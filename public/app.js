@@ -379,16 +379,28 @@ function entryTemplate(entry) {
   amount.className = "entry-amount";
   amount.textContent = money.format(entry.amount);
 
+  const actions = document.createElement("div");
+  actions.className = "entry-actions";
+
+  const edit = document.createElement("button");
+  edit.className = "edit-button";
+  edit.type = "button";
+  edit.textContent = "Edit";
+  edit.title = "Edit entry";
+  edit.setAttribute("aria-label", `Edit entry for ${formatTimestamp(entry)}`);
+  edit.addEventListener("click", () => openEntryModal(entry.id));
+
   const remove = document.createElement("button");
   remove.className = "delete-button";
   remove.type = "button";
   remove.textContent = "X";
   remove.title = "Delete entry";
-  remove.setAttribute("aria-label", `Delete entry for ${formatDate(entry.date)}`);
+  remove.setAttribute("aria-label", `Delete entry for ${formatTimestamp(entry)}`);
   remove.addEventListener("click", () => deleteEntry(entry.id));
 
+  actions.append(edit, remove);
   content.append(date, note);
-  item.append(content, amount, remove);
+  item.append(content, amount, actions);
   return item;
 }
 
@@ -458,8 +470,8 @@ async function saveChartPoint(amount, note) {
   }
 
   closeModal();
-  setMessage(`Updated ${formatTimestamp(data.entry)} from the chart.`);
-  showSweetAlert(Number(amount), "Line point updated");
+  setMessage(`Updated ${formatTimestamp(data.entry)}.`);
+  showSweetAlert(Number(amount), "Entry updated");
   await loadEntries();
   return true;
 }
