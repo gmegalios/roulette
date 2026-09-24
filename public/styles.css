@@ -199,6 +199,18 @@ label {
     linear-gradient(135deg, rgba(241, 199, 91, 0.08), transparent 34%),
     rgba(255, 255, 255, 0.055);
   overflow-x: auto;
+  transform-origin: center;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease, opacity 180ms ease;
+}
+
+.week-chart.zooming {
+  opacity: 0.2;
+  transform: scale(0.97);
+}
+
+.week-chart.day-mode {
+  border-color: rgba(87, 211, 122, 0.48);
+  box-shadow: inset 0 0 0 1px rgba(87, 211, 122, 0.18), 0 22px 70px rgba(0, 0, 0, 0.22);
 }
 
 .line-chart {
@@ -252,7 +264,7 @@ label {
   cursor: pointer;
   stroke: var(--felt-deep);
   stroke-width: 3;
-  transition: r 120ms ease, stroke 120ms ease;
+  transition: r 120ms ease, stroke 120ms ease, filter 120ms ease;
 }
 
 .chart-point.win {
@@ -268,6 +280,28 @@ label {
   r: 10;
   outline: none;
   stroke: var(--ink);
+  filter: drop-shadow(0 0 10px rgba(241, 199, 91, 0.55));
+}
+
+.day-point {
+  animation: point-pop 420ms ease both;
+}
+
+.amount-text {
+  fill: var(--ink);
+  font-size: 0.76rem;
+  font-weight: 900;
+  paint-order: stroke;
+  stroke: rgba(8, 23, 21, 0.9);
+  stroke-width: 4px;
+}
+
+.amount-text.win {
+  fill: #b8f08a;
+}
+
+.amount-text.loss {
+  fill: #ff9aa4;
 }
 
 .timestamp-text {
@@ -281,6 +315,23 @@ label {
 .empty-chart-text {
   fill: var(--muted);
   font-size: 1rem;
+}
+
+@keyframes point-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.45);
+  }
+
+  70% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .sweet-alert {

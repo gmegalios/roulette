@@ -15,6 +15,8 @@ const bestDay = document.querySelector("#bestDay");
 const weekAmount = document.querySelector("#weekAmount");
 const weekChart = document.querySelector("#weekChart");
 const weekRange = document.querySelector("#weekRange");
+const chartTitle = document.querySelector("#chart-title");
+const backWeekButton = document.querySelector("#backWeekButton");
 const prevWeekButton = document.querySelector("#prevWeekButton");
 const todayWeekButton = document.querySelector("#todayWeekButton");
 const nextWeekButton = document.querySelector("#nextWeekButton");
@@ -32,6 +34,7 @@ const clearDayButton = document.querySelector("#clearDayButton");
 
 let currentEntries = [];
 let chartWeekOffset = 0;
+let selectedChartDay = "";
 let editingEntryId = "";
 let alertTimer;
 
@@ -193,6 +196,14 @@ function svgElement(name, attributes = {}) {
 }
 
 function renderWeekChart(entries) {
+  selectedChartDay = "";
+  weekChart.classList.remove("day-mode");
+  chartTitle.textContent = "Profit line";
+  backWeekButton.hidden = true;
+  prevWeekButton.hidden = false;
+  todayWeekButton.hidden = false;
+  nextWeekButton.hidden = false;
+
   const days = getWeekDays();
   const firstDay = dateFromKey(days[0].key);
   const lastDay = dateFromKey(days[6].key);
@@ -319,18 +330,18 @@ function renderWeekChart(entries) {
       r: 7,
       tabindex: "0",
       role: "button",
-      "aria-label": `Edit ${formatTimestamp(point.entry)}, ${money.format(point.entry.amount)}`
+      "aria-label": `Open ${formatDate(point.entry.date)} day chart`
     });
-    pointButton.addEventListener("click", () => openEntryModal(point.entry.id));
+    pointButton.addEventListener("click", () => zoomToDay(point.entry.date));
     pointButton.addEventListener("keydown", (event) => {
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
-        openEntryModal(point.entry.id);
+        zoomToDay(point.entry.date);
       }
     });
 
     const title = svgElement("title");
-    title.textContent = `${formatTimestamp(point.entry)} | ${money.format(point.entry.amount)} | balance ${money.format(point.value)}`;
+    title.textContent = `${formatDate(point.entry.date)} | click to zoom into the day`;
     pointButton.append(title);
     pointGroup.append(pointButton);
 
@@ -359,6 +370,195 @@ function renderWeekChart(entries) {
   }
 
   weekChart.replaceChildren(svg);
+}
+
+function renderDayChart(entries, date) {
+  selectedChartDay = date;
+  chartTitle.textContent = "Day detail";
+  backWeekButton.hidden = false;
+  prevWeekButton.hidden = true;
+  todayWeekButton.hidden = true;
+  nextWeekButton.hidden = true;
+
+  const dayEntries = entries
+    .filter((entry) => entry.date === date)
+    .sort((a, b) => entryTimestamp(a) - entryTimestamp(b) || a.createdAt.localeCompare(b.createdAt));
+
+  let runningTotal = 0;
+  const points = dayEntries.map((entry) => {
+    runningTotal += entry.amount;
+    return {
+      entry,
+      timestamp: entryTimestamp(entry),
+      value: runningTotal
+    };
+  });
+
+  weekAmount.textContent = money.format(runningTotal);
+  weekRange.textContent = `${formatDate(date)} - ${points.length} ${points.length === 1 ? "entry" : "entries"}`;
+
+  const width = 820;
+  const height = 320;
+  const pad = { top: 28, right: 34, bottom: 58, left: 64 };
+  const chartWidth = width - pad.left - pad.right;
+  const chartHeight = height - pad.top - pad.bottom;
+  const dayStart = dateFromKey(date);
+  const dayEnd = dateFromKey(date);
+  dayEnd.setHours(23, 59, 59, 999);
+  const startTime = dayStart.getTime();
+  const endTime = dayEnd.getTime();
+  const values = [0, DAILY_GOAL, ...points.map((point) => point.value)];
+  const minValue = Math.min(...values);
+  const maxValue = Math.max(...values);
+  const span = Math.max(maxValue - minValue, DAILY_GOAL);
+  const yMin = minValue - (span * 0.16);
+  const yMax = maxValue + (span * 0.16);
+
+  const xScale = (time) => pad.left + (((time - startTime) / (endTime - startTime)) * chartWidth);
+  const yScale = (value) => pad.top + (((yMax - value) / (yMax - yMin)) * chartHeight);
+  const pathPoints = [
+    { x: pad.left, y: yScale(0) },
+    ...points.map((point) => ({
+      x: xScale(point.timestamp.getTime()),
+      y: yScale(point.value)
+    }))
+  ];
+
+  const svg = svgElement("svg", {
+    class: "line-chart day-line-chart",
+    viewBox: `0 0 ${width} ${height}`,
+    role: "img",
+    "aria-label": `Profit and loss line chart for ${formatDate(date)}`
+  });
+
+  const grid = svgElement("g", { class: "chart-grid" });
+  for (let index = 0; index <= 4; index += 1) {
+    const value = yMin + ((yMax - yMin) * (index / 4));
+    const y = yScale(value);
+    grid.append(
+      svgElement("line", { x1: pad.left, x2: width - pad.right, y1: y, y2: y }),
+      svgElement("text", { x: pad.left - 10, y: y + 4, "text-anchor": "end" })
+    );
+    grid.lastChild.textContent = money.format(value);
+  }
+  svg.append(grid);
+
+  const timeMarks = svgElement("g", { class: "chart-days" });
+  [0, 6, 12, 18, 24].forEach((hour) => {
+    const marker = dateFromKey(date);
+    marker.setHours(Math.min(hour, 23), hour === 24 ? 59 : 0, 0, 0);
+    const x = xScale(marker.getTime());
+    timeMarks.append(
+      svgElement("line", { x1: x, x2: x, y1: pad.top, y2: height - pad.bottom }),
+      svgElement("text", { x, y: height - 18, "text-anchor": "middle" })
+    );
+    timeMarks.lastChild.textContent = hour === 24 ? "24:00" : `${String(hour).padStart(2, "0")}:00`;
+  });
+  svg.append(timeMarks);
+
+  const zeroY = yScale(0);
+  svg.append(svgElement("line", {
+    class: "zero-line",
+    x1: pad.left,
+    x2: width - pad.right,
+    y1: zeroY,
+    y2: zeroY
+  }));
+
+  const goalY = yScale(DAILY_GOAL);
+  const goalLabel = svgElement("text", {
+    class: "goal-text",
+    x: width - pad.right,
+    y: goalY - 6,
+    "text-anchor": "end"
+  });
+  goalLabel.textContent = "€20 goal";
+  svg.append(
+    svgElement("line", {
+      class: "goal-line",
+      x1: pad.left,
+      x2: width - pad.right,
+      y1: goalY,
+      y2: goalY
+    }),
+    goalLabel
+  );
+
+  if (pathPoints.length > 1) {
+    const path = pathPoints
+      .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x.toFixed(2)} ${point.y.toFixed(2)}`)
+      .join(" ");
+    svg.append(svgElement("path", { class: "profit-line", d: path }));
+  }
+
+  const pointGroup = svgElement("g", { class: "chart-points" });
+  points.forEach((point) => {
+    const x = xScale(point.timestamp.getTime());
+    const y = yScale(point.value);
+    const pointButton = svgElement("circle", {
+      class: `chart-point day-point ${point.entry.amount < 0 ? "loss" : "win"}`,
+      cx: x,
+      cy: y,
+      r: 8,
+      tabindex: "0",
+      role: "button",
+      "aria-label": `Edit ${formatTimestamp(point.entry)}, ${money.format(point.entry.amount)}`
+    });
+    pointButton.addEventListener("click", () => openEntryModal(point.entry.id));
+    pointButton.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        openEntryModal(point.entry.id);
+      }
+    });
+
+    const title = svgElement("title");
+    title.textContent = `${formatTimestamp(point.entry)} | ${money.format(point.entry.amount)} | balance ${money.format(point.value)}`;
+    pointButton.append(title);
+    pointGroup.append(pointButton);
+
+    const amountLabel = svgElement("text", {
+      class: `amount-text ${point.entry.amount < 0 ? "loss" : "win"}`,
+      x,
+      y: point.entry.amount < 0 ? y + 24 : y - 16,
+      "text-anchor": "middle"
+    });
+    amountLabel.textContent = `${point.entry.amount > 0 ? "+" : ""}${money.format(point.entry.amount)}`;
+    pointGroup.append(amountLabel);
+  });
+  svg.append(pointGroup);
+
+  if (points.length === 0) {
+    const empty = svgElement("text", {
+      class: "empty-chart-text",
+      x: width / 2,
+      y: height / 2,
+      "text-anchor": "middle"
+    });
+    empty.textContent = "No entries for this day yet";
+    svg.append(empty);
+  }
+
+  weekChart.replaceChildren(svg);
+  requestAnimationFrame(() => weekChart.classList.add("day-mode"));
+}
+
+function zoomToDay(date) {
+  weekChart.classList.remove("day-mode");
+  weekChart.classList.add("zooming");
+  setTimeout(() => {
+    renderDayChart(currentEntries, date);
+    weekChart.classList.remove("zooming");
+  }, 180);
+}
+
+function renderChart(entries) {
+  if (selectedChartDay) {
+    renderDayChart(entries, selectedChartDay);
+    return;
+  }
+
+  renderWeekChart(entries);
 }
 
 function entryTemplate(entry) {
@@ -409,7 +609,7 @@ function renderEntries(entries) {
   entryList.replaceChildren(...entries.map(entryTemplate));
   emptyState.classList.toggle("visible", entries.length === 0);
   renderStats(entries);
-  renderWeekChart(entries);
+  renderChart(entries);
 }
 
 async function loadEntries() {
@@ -514,20 +714,33 @@ form.addEventListener("submit", saveEntry);
 refreshButton.addEventListener("click", loadEntries);
 
 prevWeekButton.addEventListener("click", () => {
+  selectedChartDay = "";
   chartWeekOffset -= 1;
   renderWeekChart(currentEntries);
 });
 
 todayWeekButton.addEventListener("click", () => {
+  selectedChartDay = "";
   chartWeekOffset = 0;
   renderWeekChart(currentEntries);
 });
 
 nextWeekButton.addEventListener("click", () => {
   if (chartWeekOffset < 0) {
+    selectedChartDay = "";
     chartWeekOffset += 1;
     renderWeekChart(currentEntries);
   }
+});
+
+backWeekButton.addEventListener("click", () => {
+  selectedChartDay = "";
+  weekChart.classList.remove("day-mode");
+  weekChart.classList.add("zooming");
+  setTimeout(() => {
+    renderWeekChart(currentEntries);
+    weekChart.classList.remove("zooming");
+  }, 160);
 });
 
 dayEditForm.addEventListener("submit", async (event) => {
