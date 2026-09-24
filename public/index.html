@@ -37,7 +37,7 @@
         <div class="chart-head">
           <div>
             <p id="weekRange" class="eyebrow">Last 7 days</p>
-            <h2 id="chart-title">Wins and losses</h2>
+            <h2 id="chart-title">Profit line</h2>
           </div>
           <div class="chart-actions">
             <span class="goal-pill">Goal €20/day</span>
@@ -49,7 +49,7 @@
             </div>
           </div>
         </div>
-        <div id="weekChart" class="week-chart" aria-label="Daily wins and losses for the last seven days"></div>
+        <div id="weekChart" class="week-chart" aria-label="Continuous profit and loss chart with timestamps"></div>
       </section>
 
       <section class="tracker-grid">
@@ -99,13 +99,13 @@
       <form id="dayEditForm" class="modal-card" role="dialog" aria-modal="true" aria-labelledby="dayEditTitle">
         <div class="modal-head">
           <div>
-            <p id="dayEditDate" class="eyebrow">Edit day</p>
-            <h2 id="dayEditTitle">Daily total</h2>
+            <p id="dayEditDate" class="eyebrow">Edit point</p>
+            <h2 id="dayEditTitle">Chart entry</h2>
           </div>
           <button id="closeDayModal" class="delete-button" type="button" aria-label="Close editor">X</button>
         </div>
         <label>
-          Day total
+          Amount
           <input id="dayAmountInput" type="number" step="0.01" required>
         </label>
         <label>
@@ -113,8 +113,8 @@
           <input id="dayNoteInput" maxlength="140" placeholder="Edited from the chart">
         </label>
         <div class="modal-actions">
-          <button class="ghost-button" id="clearDayButton" type="button">Clear day</button>
-          <button type="submit">Save day</button>
+          <button class="ghost-button" id="clearDayButton" type="button">Delete point</button>
+          <button type="submit">Save point</button>
         </div>
       </form>
     </div>

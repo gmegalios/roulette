@@ -48,7 +48,7 @@ data/winnings.txt
 
 - Add daily roulette wins or losses.
 - See totals for all time, this month, and best day.
-- Browse the chart by week with previous and next controls.
-- Click any chart day to edit that day's total.
+- Browse the continuous profit line by week with previous and next controls.
+- Click any chart point to edit that timestamped entry.
 - Track the daily goal of `€20`.
 - Get playful alerts for wins, losses, chart edits, and clear days.

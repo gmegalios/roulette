@@ -192,97 +192,95 @@ label {
 }
 
 .week-chart {
-  display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 10px;
-  min-height: 250px;
-}
-
-.chart-day {
-  appearance: none;
-  display: grid;
-  grid-template-rows: 1fr auto auto;
-  gap: 8px;
-  min-width: 0;
-  min-height: 0;
-  padding: 0;
-  color: inherit;
-  border: 0;
-  background: transparent;
-  text-align: center;
-}
-
-.chart-day:hover .chart-track,
-.chart-day:focus-visible .chart-track {
-  border-color: var(--gold);
-  box-shadow: 0 0 0 3px rgba(241, 199, 91, 0.14);
-}
-
-.chart-track {
-  position: relative;
-  display: grid;
-  grid-template-rows: 1fr 1fr;
-  align-items: end;
-  min-height: 156px;
-  padding: 10px 8px;
+  min-height: 330px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   background:
-    linear-gradient(to bottom, transparent calc(50% - 1px), rgba(255, 255, 255, 0.2) calc(50% - 1px), rgba(255, 255, 255, 0.2) calc(50% + 1px), transparent calc(50% + 1px)),
+    linear-gradient(135deg, rgba(241, 199, 91, 0.08), transparent 34%),
     rgba(255, 255, 255, 0.055);
+  overflow-x: auto;
 }
 
-.chart-goal-line {
-  position: absolute;
-  left: 6px;
-  right: 6px;
-  z-index: 1;
-  height: 1px;
-  color: var(--gold);
-  border-top: 1px dashed rgba(241, 199, 91, 0.75);
-  font-size: 0.64rem;
-  font-weight: 900;
-  line-height: 1;
-  text-align: right;
-  pointer-events: none;
-}
-
-.chart-bar {
+.line-chart {
   display: block;
-  width: min(100%, 42px);
-  min-height: 4px;
-  justify-self: center;
-  border-radius: 6px;
+  width: 100%;
+  min-width: 760px;
+  height: auto;
 }
 
-.chart-bar.win {
-  align-self: end;
-  background: linear-gradient(180deg, #f5d776, var(--gold));
-  box-shadow: 0 8px 24px rgba(241, 199, 91, 0.2);
+.chart-grid line,
+.chart-days line {
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 1;
 }
 
-.chart-day.goal-met .chart-bar.win {
-  background: linear-gradient(180deg, #b8f08a, #57d37a);
-  box-shadow: 0 8px 28px rgba(87, 211, 122, 0.22);
-}
-
-.chart-bar.loss {
-  align-self: start;
-  background: linear-gradient(180deg, #ff8490, var(--red));
-  box-shadow: 0 8px 24px rgba(206, 47, 65, 0.22);
-}
-
-.chart-day strong {
-  min-height: 20px;
-  font-size: 0.86rem;
-  white-space: nowrap;
-}
-
-.chart-label {
-  color: var(--muted);
-  font-size: 0.78rem;
+.chart-grid text,
+.chart-days text,
+.timestamp-text,
+.goal-text,
+.empty-chart-text {
+  fill: var(--muted);
+  font-size: 0.72rem;
   font-weight: 800;
-  white-space: nowrap;
+}
+
+.zero-line {
+  stroke: rgba(255, 255, 255, 0.42);
+  stroke-width: 1.5;
+}
+
+.goal-line {
+  stroke: rgba(241, 199, 91, 0.78);
+  stroke-dasharray: 8 7;
+  stroke-width: 1.4;
+}
+
+.goal-text {
+  fill: var(--gold);
+}
+
+.profit-line {
+  fill: none;
+  stroke: var(--gold);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4;
+  filter: drop-shadow(0 8px 12px rgba(241, 199, 91, 0.18));
+}
+
+.chart-point {
+  cursor: pointer;
+  stroke: var(--felt-deep);
+  stroke-width: 3;
+  transition: r 120ms ease, stroke 120ms ease;
+}
+
+.chart-point.win {
+  fill: #57d37a;
+}
+
+.chart-point.loss {
+  fill: #ff7784;
+}
+
+.chart-point:hover,
+.chart-point:focus {
+  r: 10;
+  outline: none;
+  stroke: var(--ink);
+}
+
+.timestamp-text {
+  fill: var(--ink);
+  font-size: 0.66rem;
+  paint-order: stroke;
+  stroke: rgba(8, 23, 21, 0.9);
+  stroke-width: 4px;
+}
+
+.empty-chart-text {
+  fill: var(--muted);
+  font-size: 1rem;
 }
 
 .sweet-alert {
@@ -547,25 +545,15 @@ button:hover {
   }
 
   .week-chart {
-    gap: 7px;
-    min-height: 230px;
+    min-height: 300px;
   }
 
   .chart-panel {
     padding: 18px;
   }
 
-  .chart-track {
-    min-height: 136px;
-    padding: 8px 5px;
-  }
-
-  .chart-day strong {
-    font-size: 0.74rem;
-  }
-
-  .chart-label {
-    font-size: 0.68rem;
+  .line-chart {
+    min-width: 700px;
   }
 
   .week-buttons {
@@ -615,8 +603,6 @@ button:hover {
   }
 
   .week-chart {
-    overflow-x: auto;
-    grid-template-columns: repeat(7, minmax(68px, 1fr));
     padding-bottom: 4px;
   }
 

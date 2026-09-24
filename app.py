@@ -161,12 +161,40 @@ class RouletteHandler(SimpleHTTPRequestHandler):
 
     def do_PUT(self):
         parsed = urlparse(self.path)
-        prefix = "/api/day/"
-        if not parsed.path.startswith(prefix):
+        entry_prefix = "/api/entries/"
+        day_prefix = "/api/day/"
+
+        if parsed.path.startswith(entry_prefix):
+            entry_id = unquote(parsed.path[len(entry_prefix):])
+            entries = read_entries()
+            original = next((item for item in entries if item["id"] == entry_id), None)
+            if not original:
+                self.send_json(404, {"error": "Entry not found."})
+                return
+
+            try:
+                body = self.read_json_body()
+            except json.JSONDecodeError:
+                self.send_json(400, {"error": "The entry could not be read."})
+                return
+
+            entry, error = clean_entry(body)
+            if error:
+                self.send_json(400, {"error": error})
+                return
+
+            entry["id"] = original["id"]
+            entry["createdAt"] = original["createdAt"]
+            next_entries = [entry if item["id"] == entry_id else item for item in entries]
+            write_entries(next_entries)
+            self.send_json(200, {"entry": entry})
+            return
+
+        if not parsed.path.startswith(day_prefix):
             self.send_json(404, {"error": "Not found."})
             return
 
-        date = unquote(parsed.path[len(prefix):])
+        date = unquote(parsed.path[len(day_prefix):])
         if not is_valid_date(date):
             self.send_json(400, {"error": "Choose a valid date."})
             return

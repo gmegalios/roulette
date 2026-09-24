@@ -1,4 +1,5 @@
 const DAILY_GOAL = 20;
+const SVG_NS = "http://www.w3.org/2000/svg";
 
 const form = document.querySelector("#entryForm");
 const dateInput = document.querySelector("#dateInput");
@@ -31,7 +32,7 @@ const clearDayButton = document.querySelector("#clearDayButton");
 
 let currentEntries = [];
 let chartWeekOffset = 0;
-let editingDate = "";
+let editingEntryId = "";
 let alertTimer;
 
 const money = new Intl.NumberFormat(undefined, {
@@ -54,6 +55,13 @@ const shortDayLabel = new Intl.DateTimeFormat(undefined, {
 const shortRangeLabel = new Intl.DateTimeFormat(undefined, {
   month: "short",
   day: "numeric"
+});
+
+const timestampLabel = new Intl.DateTimeFormat(undefined, {
+  month: "short",
+  day: "numeric",
+  hour: "2-digit",
+  minute: "2-digit"
 });
 
 function today() {
@@ -80,6 +88,10 @@ function formatDate(date) {
   return dateLabel.format(dateFromKey(date));
 }
 
+function formatTimestamp(entry) {
+  return timestampLabel.format(entryTimestamp(entry));
+}
+
 function getWeekDays(offset = chartWeekOffset) {
   const days = [];
   const start = dateFromKey(today());
@@ -90,27 +102,23 @@ function getWeekDays(offset = chartWeekOffset) {
     date.setDate(start.getDate() + index);
     days.push({
       key: toDateKey(date),
-      label: shortDayLabel.format(date),
-      total: 0,
-      note: ""
+      label: shortDayLabel.format(date)
     });
   }
 
   return days;
 }
 
-function getDayTotal(date) {
-  return currentEntries
-    .filter((entry) => entry.date === date)
-    .reduce((sum, entry) => sum + entry.amount, 0);
-}
+function entryTimestamp(entry) {
+  const created = new Date(entry.createdAt);
+  if (!Number.isNaN(created.getTime())) {
+    const hours = String(created.getHours()).padStart(2, "0");
+    const minutes = String(created.getMinutes()).padStart(2, "0");
+    const seconds = String(created.getSeconds()).padStart(2, "0");
+    return new Date(`${entry.date}T${hours}:${minutes}:${seconds}`);
+  }
 
-function getDayNote(date) {
-  return currentEntries
-    .filter((entry) => entry.date === date)
-    .map((entry) => entry.note)
-    .filter(Boolean)
-    .join("; ");
+  return new Date(`${entry.date}T12:00:00`);
 }
 
 function alertCopy(amount) {
@@ -176,64 +184,181 @@ function renderStats(entries) {
   bestDay.textContent = topEntry ? money.format(topEntry.amount) : money.format(0);
 }
 
+function svgElement(name, attributes = {}) {
+  const element = document.createElementNS(SVG_NS, name);
+  Object.entries(attributes).forEach(([key, value]) => {
+    element.setAttribute(key, value);
+  });
+  return element;
+}
+
 function renderWeekChart(entries) {
   const days = getWeekDays();
-  const dayMap = new Map(days.map((day) => [day.key, day]));
+  const firstDay = dateFromKey(days[0].key);
+  const lastDay = dateFromKey(days[6].key);
+  lastDay.setHours(23, 59, 59, 999);
 
-  entries.forEach((entry) => {
-    const day = dayMap.get(entry.date);
-    if (day) {
-      day.total += entry.amount;
-      if (entry.note) day.note = day.note ? `${day.note}; ${entry.note}` : entry.note;
-    }
+  const startTime = firstDay.getTime();
+  const endTime = lastDay.getTime();
+  const rangeEntries = entries
+    .filter((entry) => {
+      const timestamp = entryTimestamp(entry).getTime();
+      return timestamp >= startTime && timestamp <= endTime;
+    })
+    .sort((a, b) => entryTimestamp(a) - entryTimestamp(b) || a.createdAt.localeCompare(b.createdAt));
+
+  let runningTotal = 0;
+  const points = rangeEntries.map((entry) => {
+    runningTotal += entry.amount;
+    return {
+      entry,
+      timestamp: entryTimestamp(entry),
+      value: runningTotal
+    };
   });
 
-  const largest = Math.max(...days.map((day) => Math.abs(day.total)), DAILY_GOAL, 1);
-  const goalPosition = 50 + ((DAILY_GOAL / largest) * 50);
-  const weekTotal = days.reduce((sum, day) => sum + day.total, 0);
-  weekAmount.textContent = money.format(weekTotal);
-  weekRange.textContent = `${shortRangeLabel.format(dateFromKey(days[0].key))} - ${shortRangeLabel.format(dateFromKey(days[6].key))}`;
+  weekAmount.textContent = money.format(runningTotal);
+  weekRange.textContent = `${shortRangeLabel.format(firstDay)} - ${shortRangeLabel.format(lastDay)}`;
   nextWeekButton.disabled = chartWeekOffset >= 0;
 
-  const bars = days.map((day) => {
-    const item = document.createElement("button");
-    item.className = `chart-day ${day.total >= DAILY_GOAL ? "goal-met" : ""}`;
-    item.type = "button";
-    item.title = `Edit ${day.label}`;
-    item.setAttribute("aria-label", `Edit ${day.label}, ${money.format(day.total)}`);
-    item.addEventListener("click", () => openDayModal(day.key));
+  const width = 820;
+  const height = 320;
+  const pad = { top: 24, right: 28, bottom: 54, left: 64 };
+  const chartWidth = width - pad.left - pad.right;
+  const chartHeight = height - pad.top - pad.bottom;
+  const values = [0, DAILY_GOAL, ...points.map((point) => point.value)];
+  const minValue = Math.min(...values);
+  const maxValue = Math.max(...values);
+  const span = Math.max(maxValue - minValue, DAILY_GOAL);
+  const yMin = minValue - (span * 0.12);
+  const yMax = maxValue + (span * 0.12);
 
-    const track = document.createElement("span");
-    track.className = "chart-track";
+  const xScale = (time) => pad.left + (((time - startTime) / (endTime - startTime)) * chartWidth);
+  const yScale = (value) => pad.top + (((yMax - value) / (yMax - yMin)) * chartHeight);
+  const pathPoints = [
+    { x: pad.left, y: yScale(0) },
+    ...points.map((point) => ({
+      x: xScale(point.timestamp.getTime()),
+      y: yScale(point.value)
+    }))
+  ];
 
-    const goal = document.createElement("span");
-    goal.className = "chart-goal-line";
-    goal.style.bottom = `${Math.min(goalPosition, 98)}%`;
-    goal.textContent = "€20";
-
-    const bar = document.createElement("span");
-    const height = Math.max((Math.abs(day.total) / largest) * 100, day.total === 0 ? 2 : 10);
-    bar.className = `chart-bar ${day.total < 0 ? "loss" : "win"}`;
-    bar.style.height = `${height}%`;
-
-    if (day.total < 0) {
-      track.append(goal, document.createElement("span"), bar);
-    } else {
-      track.append(goal, bar, document.createElement("span"));
-    }
-
-    const value = document.createElement("strong");
-    value.textContent = money.format(day.total);
-
-    const label = document.createElement("span");
-    label.className = "chart-label";
-    label.textContent = day.label;
-
-    item.append(track, value, label);
-    return item;
+  const svg = svgElement("svg", {
+    class: "line-chart",
+    viewBox: `0 0 ${width} ${height}`,
+    role: "img",
+    "aria-label": "Continuous profit and loss line chart"
   });
 
-  weekChart.replaceChildren(...bars);
+  const grid = svgElement("g", { class: "chart-grid" });
+  for (let index = 0; index <= 4; index += 1) {
+    const value = yMin + ((yMax - yMin) * (index / 4));
+    const y = yScale(value);
+    grid.append(
+      svgElement("line", { x1: pad.left, x2: width - pad.right, y1: y, y2: y }),
+      svgElement("text", { x: pad.left - 10, y: y + 4, "text-anchor": "end" })
+    );
+    grid.lastChild.textContent = money.format(value);
+  }
+  svg.append(grid);
+
+  const dayMarks = svgElement("g", { class: "chart-days" });
+  days.forEach((day) => {
+    const x = xScale(dateFromKey(day.key).getTime());
+    dayMarks.append(
+      svgElement("line", { x1: x, x2: x, y1: pad.top, y2: height - pad.bottom }),
+      svgElement("text", { x, y: height - 18, "text-anchor": "middle" })
+    );
+    dayMarks.lastChild.textContent = day.label;
+  });
+  svg.append(dayMarks);
+
+  const zeroY = yScale(0);
+  svg.append(svgElement("line", {
+    class: "zero-line",
+    x1: pad.left,
+    x2: width - pad.right,
+    y1: zeroY,
+    y2: zeroY
+  }));
+
+  const goalY = yScale(DAILY_GOAL);
+  const goalLabel = svgElement("text", {
+    class: "goal-text",
+    x: width - pad.right,
+    y: goalY - 6,
+    "text-anchor": "end"
+  });
+  goalLabel.textContent = "€20 goal";
+  svg.append(
+    svgElement("line", {
+      class: "goal-line",
+      x1: pad.left,
+      x2: width - pad.right,
+      y1: goalY,
+      y2: goalY
+    }),
+    goalLabel
+  );
+
+  if (pathPoints.length > 1) {
+    const path = pathPoints
+      .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x.toFixed(2)} ${point.y.toFixed(2)}`)
+      .join(" ");
+    svg.append(svgElement("path", { class: "profit-line", d: path }));
+  }
+
+  const pointGroup = svgElement("g", { class: "chart-points" });
+  points.forEach((point, index) => {
+    const x = xScale(point.timestamp.getTime());
+    const y = yScale(point.value);
+    const pointButton = svgElement("circle", {
+      class: `chart-point ${point.entry.amount < 0 ? "loss" : "win"}`,
+      cx: x,
+      cy: y,
+      r: 7,
+      tabindex: "0",
+      role: "button",
+      "aria-label": `Edit ${formatTimestamp(point.entry)}, ${money.format(point.entry.amount)}`
+    });
+    pointButton.addEventListener("click", () => openEntryModal(point.entry.id));
+    pointButton.addEventListener("keydown", (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        openEntryModal(point.entry.id);
+      }
+    });
+
+    const title = svgElement("title");
+    title.textContent = `${formatTimestamp(point.entry)} | ${money.format(point.entry.amount)} | balance ${money.format(point.value)}`;
+    pointButton.append(title);
+    pointGroup.append(pointButton);
+
+    if (points.length <= 8 || index === points.length - 1) {
+      const text = svgElement("text", {
+        class: "timestamp-text",
+        x,
+        y: y - 14,
+        "text-anchor": "middle"
+      });
+      text.textContent = timestampLabel.format(point.timestamp);
+      pointGroup.append(text);
+    }
+  });
+  svg.append(pointGroup);
+
+  if (points.length === 0) {
+    const empty = svgElement("text", {
+      class: "empty-chart-text",
+      x: width / 2,
+      y: height / 2,
+      "text-anchor": "middle"
+    });
+    empty.textContent = "No points in this range yet";
+    svg.append(empty);
+  }
+
+  weekChart.replaceChildren(svg);
 }
 
 function entryTemplate(entry) {
@@ -248,7 +373,7 @@ function entryTemplate(entry) {
 
   const note = document.createElement("span");
   note.className = "entry-note";
-  note.textContent = entry.note || "No note";
+  note.textContent = entry.note || formatTimestamp(entry);
 
   const amount = document.createElement("strong");
   amount.className = "entry-amount";
@@ -312,23 +437,29 @@ async function saveEntry(event) {
   await loadEntries();
 }
 
-async function saveDayTotal(amount, note) {
-  const savedDate = editingDate;
-  const response = await fetch(`/api/day/${encodeURIComponent(editingDate)}`, {
+async function saveChartPoint(amount, note) {
+  const original = currentEntries.find((entry) => entry.id === editingEntryId);
+  if (!original) return false;
+
+  const response = await fetch(`/api/entries/${encodeURIComponent(editingEntryId)}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ amount, note })
+    body: JSON.stringify({
+      date: original.date,
+      amount,
+      note
+    })
   });
 
   const data = await response.json();
   if (!response.ok) {
-    setMessage(data.error || "Could not update that day.", true);
+    setMessage(data.error || "Could not update that point.", true);
     return false;
   }
 
   closeModal();
-  setMessage(`Updated ${formatDate(savedDate)} from the chart.`);
-  showSweetAlert(Number(amount), "Diagram updated");
+  setMessage(`Updated ${formatTimestamp(data.entry)} from the chart.`);
+  showSweetAlert(Number(amount), "Line point updated");
   await loadEntries();
   return true;
 }
@@ -347,11 +478,14 @@ async function deleteEntry(id) {
   await loadEntries();
 }
 
-function openDayModal(date) {
-  editingDate = date;
-  dayEditDate.textContent = formatDate(date);
-  dayAmountInput.value = getDayTotal(date).toFixed(2);
-  dayNoteInput.value = getDayNote(date);
+function openEntryModal(id) {
+  const entry = currentEntries.find((item) => item.id === id);
+  if (!entry) return;
+
+  editingEntryId = id;
+  dayEditDate.textContent = formatTimestamp(entry);
+  dayAmountInput.value = entry.amount.toFixed(2);
+  dayNoteInput.value = entry.note;
   dayModal.classList.add("visible");
   dayModal.setAttribute("aria-hidden", "false");
   dayAmountInput.focus();
@@ -361,7 +495,7 @@ function openDayModal(date) {
 function closeModal() {
   dayModal.classList.remove("visible");
   dayModal.setAttribute("aria-hidden", "true");
-  editingDate = "";
+  editingEntryId = "";
 }
 
 form.addEventListener("submit", saveEntry);
@@ -386,13 +520,13 @@ nextWeekButton.addEventListener("click", () => {
 
 dayEditForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  await saveDayTotal(dayAmountInput.value, dayNoteInput.value);
+  await saveChartPoint(dayAmountInput.value, dayNoteInput.value);
 });
 
 clearDayButton.addEventListener("click", async () => {
-  dayAmountInput.value = "0.00";
-  dayNoteInput.value = "";
-  await saveDayTotal(0, "");
+  const id = editingEntryId;
+  closeModal();
+  await deleteEntry(id);
 });
 
 closeDayModal.addEventListener("click", closeModal);
