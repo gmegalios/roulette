@@ -36,7 +36,7 @@ let alertTimer;
 
 const money = new Intl.NumberFormat(undefined, {
   style: "currency",
-  currency: "USD"
+  currency: "EUR"
 });
 
 const dateLabel = new Intl.DateTimeFormat(undefined, {
@@ -119,7 +119,7 @@ function alertCopy(amount) {
       return {
         type: "win",
         title: "Goal crushed",
-        text: `Up ${money.format(amount)}. The $20 target is looking nervous.`
+        text: `Up ${money.format(amount)}. The €20 target is looking nervous.`
       };
     }
 
@@ -209,7 +209,7 @@ function renderWeekChart(entries) {
     const goal = document.createElement("span");
     goal.className = "chart-goal-line";
     goal.style.bottom = `${Math.min(goalPosition, 98)}%`;
-    goal.textContent = "$20";
+    goal.textContent = "€20";
 
     const bar = document.createElement("span");
     const height = Math.max((Math.abs(day.total) / largest) * 100, day.total === 0 ? 2 : 10);
