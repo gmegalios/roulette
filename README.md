@@ -52,5 +52,5 @@ data/winnings.txt
 - Switch between Week and Today chart tabs.
 - Click a weekly chart point to zoom into that day.
 - Click a day-chart point or history row edit button to update that timestamped entry.
-- Track the daily goal of `€20`.
+- Track the daily goal of beating the previous day's winnings.
 - Get playful alerts for wins, losses, chart edits, and clear days.

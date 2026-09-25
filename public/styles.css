@@ -87,19 +87,47 @@ h2 {
   position: relative;
   flex: 0 0 clamp(124px, 20vw, 210px);
   aspect-ratio: 1;
-  border: 10px solid var(--gold);
+  border: 8px solid var(--gold);
   border-radius: 50%;
   background:
-    radial-gradient(circle, var(--felt-deep) 0 18%, transparent 19%),
-    repeating-conic-gradient(var(--red) 0deg 18deg, #111 18deg 36deg);
-  box-shadow: inset 0 0 0 12px rgba(255, 255, 255, 0.08), 0 18px 50px rgba(0, 0, 0, 0.38);
+    radial-gradient(circle, var(--felt-deep) 0 16%, var(--gold) 16% 18%, transparent 18%),
+    radial-gradient(circle, transparent 0 54%, rgba(241, 199, 91, 0.92) 55% 58%, transparent 59%),
+    repeating-conic-gradient(from -4deg, #0d8b5f 0deg 8deg, #111 8deg 16deg, var(--red) 16deg 24deg, #111 24deg 32deg);
+  box-shadow:
+    inset 0 0 0 10px rgba(255, 255, 255, 0.08),
+    inset 0 0 0 28px rgba(8, 23, 21, 0.38),
+    0 18px 50px rgba(0, 0, 0, 0.38);
 }
 
 .wheel-mark span {
   position: absolute;
-  inset: 42%;
+  inset: 38%;
   border-radius: 50%;
-  background: var(--gold);
+  background:
+    radial-gradient(circle, #fff6c7 0 12%, var(--gold) 13% 42%, #9f7425 43% 100%);
+  box-shadow: 0 0 0 7px rgba(8, 23, 21, 0.75);
+}
+
+.wheel-mark::before {
+  position: absolute;
+  inset: 17%;
+  content: "";
+  border-radius: 50%;
+  background:
+    repeating-conic-gradient(from 0deg, rgba(246, 243, 234, 0.32) 0deg 2deg, transparent 2deg 30deg);
+  box-shadow: inset 0 0 0 2px rgba(246, 243, 234, 0.18);
+}
+
+.wheel-mark::after {
+  position: absolute;
+  top: 19%;
+  right: 29%;
+  width: 12%;
+  aspect-ratio: 1;
+  content: "";
+  border-radius: 50%;
+  background: #f6f3ea;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
 }
 
 .stats {

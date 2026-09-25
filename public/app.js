@@ -1,4 +1,3 @@
-const DAILY_GOAL = 20;
 const SVG_NS = "http://www.w3.org/2000/svg";
 
 const form = document.querySelector("#entryForm");
@@ -16,6 +15,7 @@ const weekAmount = document.querySelector("#weekAmount");
 const weekChart = document.querySelector("#weekChart");
 const weekRange = document.querySelector("#weekRange");
 const chartTitle = document.querySelector("#chart-title");
+const goalPill = document.querySelector("#goalPill");
 const weekTabButton = document.querySelector("#weekTabButton");
 const dayTabButton = document.querySelector("#dayTabButton");
 const backWeekButton = document.querySelector("#backWeekButton");
@@ -97,6 +97,22 @@ function formatTimestamp(entry) {
   return timestampLabel.format(entryTimestamp(entry));
 }
 
+function previousDateKey(date) {
+  const previous = dateFromKey(date);
+  previous.setDate(previous.getDate() - 1);
+  return toDateKey(previous);
+}
+
+function dayTotal(entries, date) {
+  return entries
+    .filter((entry) => entry.date === date)
+    .reduce((sum, entry) => sum + entry.amount, 0);
+}
+
+function previousDayTarget(entries, date) {
+  return dayTotal(entries, previousDateKey(date));
+}
+
 function getWeekDays(offset = chartWeekOffset) {
   const days = [];
   const start = dateFromKey(today());
@@ -126,20 +142,20 @@ function entryTimestamp(entry) {
   return new Date(`${entry.date}T12:00:00`);
 }
 
-function alertCopy(amount) {
+function alertCopy(amount, target = 0, dayTotalValue = amount) {
   if (amount > 0) {
-    if (amount >= DAILY_GOAL) {
+    if (dayTotalValue > target) {
       return {
         type: "win",
-        title: "Goal crushed",
-        text: `Up ${money.format(amount)}. The €20 target is looking nervous.`
+        title: "Yesterday beaten",
+        text: `Day total ${money.format(dayTotalValue)}. Previous day was ${money.format(target)}.`
       };
     }
 
     return {
       type: "win",
-      title: "Green number energy",
-      text: `Nice, ${money.format(amount)} won. Only ${money.format(DAILY_GOAL - amount)} to today's goal.`
+      title: "Chasing yesterday",
+      text: `Nice, ${money.format(amount)} in. Day total ${money.format(dayTotalValue)}, target ${money.format(target)}.`
     };
   }
 
@@ -158,8 +174,8 @@ function alertCopy(amount) {
   };
 }
 
-function showSweetAlert(amount, overrideTitle) {
-  const copy = alertCopy(amount);
+function showSweetAlert(amount, overrideTitle, target = 0, dayTotalValue = amount) {
+  const copy = alertCopy(amount, target, dayTotalValue);
   sweetAlert.className = `sweet-alert visible ${copy.type}`;
   sweetAlertType.textContent = copy.type === "loss" ? "LOSS" : copy.type === "win" ? "WIN" : "OK";
   sweetAlertTitle.textContent = overrideTitle || copy.title;
@@ -211,6 +227,7 @@ function renderWeekChart(entries) {
   weekChart.classList.remove("day-mode");
   chartTitle.textContent = "Profit line";
   setChartTabs("week");
+  goalPill.textContent = "Goal: beat previous day";
   backWeekButton.hidden = true;
   prevWeekButton.hidden = false;
   todayWeekButton.hidden = false;
@@ -249,10 +266,10 @@ function renderWeekChart(entries) {
   const pad = { top: 24, right: 28, bottom: 54, left: 64 };
   const chartWidth = width - pad.left - pad.right;
   const chartHeight = height - pad.top - pad.bottom;
-  const values = [0, DAILY_GOAL, ...points.map((point) => point.value)];
+  const values = [0, ...points.map((point) => point.value)];
   const minValue = Math.min(...values);
   const maxValue = Math.max(...values);
-  const span = Math.max(maxValue - minValue, DAILY_GOAL);
+  const span = Math.max(maxValue - minValue, 10);
   const yMin = minValue - (span * 0.12);
   const yMax = maxValue + (span * 0.12);
 
@@ -304,25 +321,6 @@ function renderWeekChart(entries) {
     y1: zeroY,
     y2: zeroY
   }));
-
-  const goalY = yScale(DAILY_GOAL);
-  const goalLabel = svgElement("text", {
-    class: "goal-text",
-    x: width - pad.right,
-    y: goalY - 6,
-    "text-anchor": "end"
-  });
-  goalLabel.textContent = "€20 goal";
-  svg.append(
-    svgElement("line", {
-      class: "goal-line",
-      x1: pad.left,
-      x2: width - pad.right,
-      y1: goalY,
-      y2: goalY
-    }),
-    goalLabel
-  );
 
   if (pathPoints.length > 1) {
     const path = pathPoints
@@ -388,6 +386,8 @@ function renderDayChart(entries, date) {
   selectedChartDay = date;
   chartTitle.textContent = "Day detail";
   setChartTabs("day", date);
+  const target = previousDayTarget(entries, date);
+  goalPill.textContent = `Target ${money.format(target)}`;
   backWeekButton.hidden = false;
   prevWeekButton.hidden = true;
   todayWeekButton.hidden = true;
@@ -420,10 +420,10 @@ function renderDayChart(entries, date) {
   dayEnd.setHours(23, 59, 59, 999);
   const startTime = dayStart.getTime();
   const endTime = dayEnd.getTime();
-  const values = [0, DAILY_GOAL, ...points.map((point) => point.value)];
+  const values = [0, target, ...points.map((point) => point.value)];
   const minValue = Math.min(...values);
   const maxValue = Math.max(...values);
-  const span = Math.max(maxValue - minValue, DAILY_GOAL);
+  const span = Math.max(maxValue - minValue, 10);
   const yMin = minValue - (span * 0.16);
   const yMax = maxValue + (span * 0.16);
 
@@ -478,14 +478,14 @@ function renderDayChart(entries, date) {
     y2: zeroY
   }));
 
-  const goalY = yScale(DAILY_GOAL);
+  const goalY = yScale(target);
   const goalLabel = svgElement("text", {
     class: "goal-text",
     x: width - pad.right,
     y: goalY - 6,
     "text-anchor": "end"
   });
-  goalLabel.textContent = "€20 goal";
+  goalLabel.textContent = `Prev day ${money.format(target)}`;
   svg.append(
     svgElement("line", {
       class: "goal-line",
@@ -658,7 +658,10 @@ async function saveEntry(event) {
   amountInput.value = "";
   noteInput.value = "";
   setMessage("Saved to data/winnings.txt");
-  showSweetAlert(Number(payload.amount));
+  const savedAmount = Number(payload.amount);
+  const target = previousDayTarget(currentEntries, payload.date);
+  const newDayTotal = dayTotal(currentEntries, payload.date) + savedAmount;
+  showSweetAlert(savedAmount, undefined, target, newDayTotal);
   await loadEntries();
 }
 
@@ -684,7 +687,12 @@ async function saveChartPoint(amount, note) {
 
   closeModal();
   setMessage(`Updated ${formatTimestamp(data.entry)}.`);
-  showSweetAlert(Number(amount), "Entry updated");
+  const updatedAmount = Number(amount);
+  const target = previousDayTarget(currentEntries, original.date);
+  const newDayTotal = currentEntries
+    .filter((entry) => entry.date === original.date)
+    .reduce((sum, entry) => sum + (entry.id === original.id ? updatedAmount : entry.amount), 0);
+  showSweetAlert(updatedAmount, "Entry updated", target, newDayTotal);
   await loadEntries();
   return true;
 }
