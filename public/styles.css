@@ -181,12 +181,19 @@ label {
 
 .chart-tabs {
   display: inline-flex;
+  align-items: center;
   gap: 6px;
   margin-top: 14px;
   padding: 4px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.06);
+}
+
+.chart-date-input {
+  width: 150px;
+  min-height: 34px;
+  padding: 0 9px;
 }
 
 .tab-button {
@@ -713,6 +720,16 @@ button:hover {
   .chart-actions {
     width: 100%;
     justify-items: stretch;
+  }
+
+  .chart-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+
+  .chart-date-input {
+    width: 100%;
   }
 
   .week-chart {

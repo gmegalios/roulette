@@ -18,6 +18,7 @@ const chartTitle = document.querySelector("#chart-title");
 const goalPill = document.querySelector("#goalPill");
 const weekTabButton = document.querySelector("#weekTabButton");
 const dayTabButton = document.querySelector("#dayTabButton");
+const chartDateInput = document.querySelector("#chartDateInput");
 const backWeekButton = document.querySelector("#backWeekButton");
 const prevWeekButton = document.querySelector("#prevWeekButton");
 const todayWeekButton = document.querySelector("#todayWeekButton");
@@ -220,6 +221,7 @@ function setChartTabs(mode, date = today()) {
   weekTabButton.setAttribute("aria-selected", String(!isDay));
   dayTabButton.setAttribute("aria-selected", String(isDay));
   dayTabButton.textContent = date === today() ? "Today" : "Day";
+  chartDateInput.value = date;
 }
 
 function renderWeekChart(entries) {
@@ -744,6 +746,12 @@ dayTabButton.addEventListener("click", () => {
   zoomToDay(today());
 });
 
+chartDateInput.addEventListener("change", () => {
+  if (chartDateInput.value) {
+    zoomToDay(chartDateInput.value);
+  }
+});
+
 prevWeekButton.addEventListener("click", () => {
   selectedChartDay = "";
   chartWeekOffset -= 1;
@@ -797,6 +805,7 @@ document.addEventListener("keydown", (event) => {
 });
 
 dateInput.value = today();
+chartDateInput.value = today();
 loadEntries().catch(() => {
   setMessage("Could not load the text file yet.", true);
 });
