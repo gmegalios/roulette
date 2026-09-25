@@ -1,15 +1,15 @@
 :root {
   color-scheme: dark;
-  --felt: #12372f;
-  --felt-deep: #081715;
-  --felt-light: #1c5b4d;
+  --felt: #1f6a56;
+  --felt-deep: #0e312a;
+  --felt-light: #2b806b;
   --red: #ce2f41;
-  --gold: #f1c75b;
-  --ink: #f6f3ea;
-  --muted: #a9b8b0;
-  --line: rgba(255, 255, 255, 0.14);
-  --panel: rgba(10, 22, 20, 0.84);
-  --shadow: 0 24px 80px rgba(0, 0, 0, 0.36);
+  --gold: #ffd76a;
+  --ink: #fffaf0;
+  --muted: #cfddd4;
+  --line: rgba(255, 255, 255, 0.22);
+  --panel: rgba(20, 56, 48, 0.86);
+  --shadow: 0 22px 64px rgba(0, 0, 0, 0.28);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
@@ -22,9 +22,10 @@ body {
   margin: 0;
   color: var(--ink);
   background:
-    radial-gradient(circle at 22% 8%, rgba(241, 199, 91, 0.22), transparent 28rem),
-    linear-gradient(135deg, rgba(206, 47, 65, 0.32), transparent 30%),
-    linear-gradient(160deg, var(--felt) 0%, var(--felt-deep) 70%);
+    radial-gradient(circle at 20% 6%, rgba(255, 215, 106, 0.32), transparent 28rem),
+    radial-gradient(circle at 86% 14%, rgba(87, 211, 122, 0.22), transparent 24rem),
+    linear-gradient(135deg, rgba(206, 47, 65, 0.18), transparent 34%),
+    linear-gradient(160deg, var(--felt) 0%, var(--felt-deep) 78%);
 }
 
 button,
@@ -53,8 +54,8 @@ button {
   border: 1px solid var(--line);
   border-radius: 8px;
   background:
-    linear-gradient(90deg, rgba(8, 23, 21, 0.92), rgba(18, 55, 47, 0.62)),
-    repeating-conic-gradient(from 12deg, rgba(246, 243, 234, 0.08) 0deg 12deg, transparent 12deg 24deg);
+    linear-gradient(90deg, rgba(14, 49, 42, 0.9), rgba(31, 106, 86, 0.7)),
+    repeating-conic-gradient(from 12deg, rgba(246, 243, 234, 0.12) 0deg 12deg, transparent 12deg 24deg);
   box-shadow: var(--shadow);
 }
 
@@ -92,7 +93,7 @@ h2 {
   background:
     radial-gradient(circle, var(--felt-deep) 0 16%, var(--gold) 16% 18%, transparent 18%),
     radial-gradient(circle, transparent 0 54%, rgba(241, 199, 91, 0.92) 55% 58%, transparent 59%),
-    repeating-conic-gradient(from -4deg, #0d8b5f 0deg 8deg, #111 8deg 16deg, var(--red) 16deg 24deg, #111 24deg 32deg);
+    repeating-conic-gradient(from -4deg, #11a66f 0deg 8deg, #1b2421 8deg 16deg, var(--red) 16deg 24deg, #1b2421 24deg 32deg);
   box-shadow:
     inset 0 0 0 10px rgba(255, 255, 255, 0.08),
     inset 0 0 0 28px rgba(8, 23, 21, 0.38),
@@ -144,7 +145,7 @@ h2 {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--panel);
-  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.14);
 }
 
 .stats article {
@@ -244,11 +245,11 @@ label {
 
 .week-chart {
   min-height: 330px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 8px;
   background:
-    linear-gradient(135deg, rgba(241, 199, 91, 0.08), transparent 34%),
-    rgba(255, 255, 255, 0.055);
+    linear-gradient(135deg, rgba(255, 215, 106, 0.12), transparent 34%),
+    rgba(255, 255, 255, 0.09);
   overflow-x: auto;
   transform-origin: center;
   transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease, opacity 180ms ease;
@@ -273,7 +274,7 @@ label {
 
 .chart-grid line,
 .chart-days line {
-  stroke: rgba(255, 255, 255, 0.1);
+  stroke: rgba(255, 255, 255, 0.16);
   stroke-width: 1;
 }
 
@@ -408,7 +409,7 @@ label {
   padding: 18px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(8, 23, 21, 0.96);
+  background: rgba(20, 56, 48, 0.97);
   box-shadow: var(--shadow);
 }
 
@@ -464,7 +465,7 @@ label {
   padding: 22px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: rgba(8, 23, 21, 0.98);
+  background: rgba(20, 56, 48, 0.98);
   box-shadow: var(--shadow);
 }
 
@@ -505,11 +506,11 @@ label {
 input {
   width: 100%;
   min-height: 46px;
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: 6px;
   padding: 0 13px;
   color: var(--ink);
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.12);
   outline: none;
 }
 
@@ -572,7 +573,7 @@ button:hover {
   border: 1px solid var(--line);
   border-left: 5px solid var(--gold);
   border-radius: 8px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.09);
 }
 
 .entry-item.loss {
@@ -614,7 +615,7 @@ button:hover {
   padding: 0 12px;
   color: var(--ink);
   border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .delete-button {
