@@ -47,6 +47,7 @@ data/winnings.txt
 ## Features
 
 - Add daily roulette wins or losses.
+- History shows the latest 10 events while totals and charts still use all saved entries.
 - See totals for all time, this month, and best day.
 - Browse the continuous profit line by week with previous and next controls.
 - Switch between Week and Today chart tabs.

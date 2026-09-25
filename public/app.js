@@ -8,6 +8,7 @@ const formMessage = document.querySelector("#formMessage");
 const refreshButton = document.querySelector("#refreshButton");
 const entryList = document.querySelector("#entryList");
 const emptyState = document.querySelector("#emptyState");
+const historyLimitNote = document.querySelector("#historyLimitNote");
 const totalAmount = document.querySelector("#totalAmount");
 const monthAmount = document.querySelector("#monthAmount");
 const bestDay = document.querySelector("#bestDay");
@@ -621,8 +622,10 @@ function entryTemplate(entry) {
 
 function renderEntries(entries) {
   currentEntries = entries;
-  entryList.replaceChildren(...entries.map(entryTemplate));
+  const visibleEntries = entries.slice(0, 10);
+  entryList.replaceChildren(...visibleEntries.map(entryTemplate));
   emptyState.classList.toggle("visible", entries.length === 0);
+  historyLimitNote.textContent = entries.length > 10 ? `${entries.length - 10} older entries hidden` : "";
   renderStats(entries);
   renderChart(entries);
 }

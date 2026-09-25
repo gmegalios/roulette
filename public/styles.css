@@ -570,6 +570,14 @@ button:hover {
   list-style: none;
 }
 
+.history-limit-note {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 800;
+  text-align: center;
+}
+
 .entry-item {
   display: grid;
   grid-template-columns: 1fr auto auto;
