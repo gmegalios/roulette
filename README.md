@@ -61,7 +61,7 @@ Then change both Microsoft URLs in `.env` to use `https://192.168.101.150:1186`.
 
 ## Microsoft SSO
 
-The app supports Microsoft Entra ID sign-in using the authorization-code flow. When enabled, the page and every data API require an authenticated Microsoft session. By default, authentication is off so the app still runs locally without Entra credentials.
+The app supports Microsoft Entra ID sign-in using the authorization-code flow. When enabled, visitors see a login page with a **Sign in with Microsoft** button, and the page and every data API require an authenticated Microsoft session. By default, authentication is off so the app still runs locally without Entra credentials.
 
 ### 1. Register the app in Microsoft Entra
 
@@ -99,7 +99,7 @@ set +a
 python3 app.py
 ```
 
-Then open `https://localhost:1186`. The app redirects to Microsoft, returns through `/auth/callback`, and creates an eight-hour local session.
+Then open `https://localhost:1186`. Select **Sign in with Microsoft**; the app sends you to Microsoft, returns through `/auth/callback`, and creates an eight-hour local session. With the single-tenant registration, any account in that tenant can sign in unless `MICROSOFT_ALLOWED_USERS` limits the list.
 
 The required settings are:
 

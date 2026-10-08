@@ -300,6 +300,28 @@ h1{{margin:0 0 14px}}p{{color:#cfddd4;line-height:1.55}}a{{display:inline-block;
         self.end_headers()
         self.wfile.write(body)
 
+    def send_login_page(self, next_path="/"):
+        if not next_path.startswith("/") or next_path.startswith("//"):
+            next_path = "/"
+        sign_in_url = f"/auth/start?{urlencode({'next': next_path})}"
+        body = f"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Sign in | Roulette Winnings</title><style>
+:root{{color-scheme:dark;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}}
+*{{box-sizing:border-box}}body{{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;background:radial-gradient(circle at 20% 6%,#ffd76a52,transparent 28rem),linear-gradient(160deg,#1f6a56,#0e312a 78%);color:#fffaf0}}
+main{{width:min(460px,100%);padding:40px;border:1px solid #ffffff38;border-radius:12px;background:#143830e8;box-shadow:0 22px 64px #0005;text-align:center}}
+.mark{{width:86px;aspect-ratio:1;margin:0 auto 24px;border:6px solid #ffd76a;border-radius:50%;background:repeating-conic-gradient(#11a66f 0 12deg,#1b2421 12deg 24deg,#ce2f41 24deg 36deg)}}
+h1{{margin:0;font-size:2rem}}p{{margin:14px 0 26px;color:#cfddd4;line-height:1.55}}
+a{{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:13px 18px;border-radius:8px;background:#fff;color:#242424;font-weight:750;text-decoration:none}}
+.ms{{display:grid;grid-template-columns:repeat(2,8px);gap:2px}}.ms i{{width:8px;height:8px}}.ms i:nth-child(1){{background:#f25022}}.ms i:nth-child(2){{background:#7fba00}}.ms i:nth-child(3){{background:#00a4ef}}.ms i:nth-child(4){{background:#ffb900}}
+</style></head><body><main><div class="mark" aria-hidden="true"></div><h1>Roulette Winnings</h1><p>Sign in with your organization’s Microsoft account to continue.</p><a href="{escape(sign_in_url, quote=True)}"><span class="ms" aria-hidden="true"><i></i><i></i><i></i><i></i></span>Sign in with Microsoft</a></main></body></html>""".encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type", "text/html; charset=utf-8")
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        self.wfile.write(body)
+
     def send_json(self, status, payload):
         body = json.dumps(payload).encode("utf-8")
         self.send_response(status)
@@ -417,6 +439,14 @@ h1{{margin:0 0 14px}}p{{color:#cfddd4;line-height:1.55}}a{{display:inline-block;
     def do_GET(self):
         parsed = urlparse(self.path)
         if parsed.path == "/login" and microsoft_auth_enabled():
+            session = self.current_session()
+            if session and session.get("user"):
+                self.redirect("/")
+                return
+            query = parse_qs(parsed.query)
+            self.send_login_page(query.get("next", ["/"])[-1])
+            return
+        if parsed.path == "/auth/start" and microsoft_auth_enabled():
             self.start_microsoft_login(parsed)
             return
         if parsed.path == "/auth/callback" and microsoft_auth_enabled():
