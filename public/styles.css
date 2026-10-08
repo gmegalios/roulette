@@ -84,6 +84,27 @@ h2 {
   font-size: 1.2rem;
 }
 
+.account-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 22px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.account-bar a {
+  padding: 7px 10px;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  text-decoration: none;
+}
+
+.account-bar a:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
 .wheel-mark {
   position: relative;
   flex: 0 0 clamp(124px, 20vw, 210px);

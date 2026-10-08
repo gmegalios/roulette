@@ -35,12 +35,38 @@ const dayAmountInput = document.querySelector("#dayAmountInput");
 const dayNoteInput = document.querySelector("#dayNoteInput");
 const closeDayModal = document.querySelector("#closeDayModal");
 const clearDayButton = document.querySelector("#clearDayButton");
+const accountBar = document.querySelector("#accountBar");
+const userName = document.querySelector("#userName");
 
 let currentEntries = [];
 let chartWeekOffset = 0;
 let selectedChartDay = "";
 let editingEntryId = "";
 let alertTimer;
+let csrfToken = "";
+
+async function apiFetch(url, options = {}) {
+  const headers = new Headers(options.headers || {});
+  if (csrfToken && options.method && options.method !== "GET") {
+    headers.set("X-CSRF-Token", csrfToken);
+  }
+  const response = await fetch(url, { ...options, headers });
+  if (response.status === 401) {
+    window.location.assign("/login");
+  }
+  return response;
+}
+
+async function loadAccount() {
+  const response = await fetch("/api/auth");
+  if (!response.ok) return;
+  const auth = await response.json();
+  csrfToken = auth.csrfToken || "";
+  if (auth.enabled && auth.user) {
+    userName.textContent = auth.user.name || auth.user.username;
+    accountBar.hidden = false;
+  }
+}
 
 const money = new Intl.NumberFormat(undefined, {
   style: "currency",
@@ -631,7 +657,7 @@ function renderEntries(entries) {
 }
 
 async function loadEntries() {
-  const response = await fetch("/api/entries");
+  const response = await apiFetch("/api/entries");
   if (!response.ok) throw new Error("Could not load entries.");
   const data = await response.json();
   renderEntries(data.entries);
@@ -647,7 +673,7 @@ async function saveEntry(event) {
     note: noteInput.value
   };
 
-  const response = await fetch("/api/entries", {
+  const response = await apiFetch("/api/entries", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
@@ -674,7 +700,7 @@ async function saveChartPoint(amount, note) {
   const original = currentEntries.find((entry) => entry.id === editingEntryId);
   if (!original) return false;
 
-  const response = await fetch(`/api/entries/${encodeURIComponent(editingEntryId)}`, {
+  const response = await apiFetch(`/api/entries/${encodeURIComponent(editingEntryId)}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -703,7 +729,7 @@ async function saveChartPoint(amount, note) {
 }
 
 async function deleteEntry(id) {
-  const response = await fetch(`/api/entries/${encodeURIComponent(id)}`, {
+  const response = await apiFetch(`/api/entries/${encodeURIComponent(id)}`, {
     method: "DELETE"
   });
 
@@ -809,6 +835,8 @@ document.addEventListener("keydown", (event) => {
 
 dateInput.value = today();
 chartDateInput.value = today();
-loadEntries().catch(() => {
-  setMessage("Could not load the text file yet.", true);
-});
+loadAccount()
+  .then(loadEntries)
+  .catch(() => {
+    setMessage("Could not load the text file yet.", true);
+  });
