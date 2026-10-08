@@ -603,6 +603,15 @@ function renderChart(entries) {
   renderWeekChart(entries);
 }
 
+function creatorLabel(entry) {
+  const creator = entry.createdBy;
+  if (!creator) return "Creator unavailable";
+  if (creator.name && creator.username && creator.name.toLowerCase() !== creator.username.toLowerCase()) {
+    return `${creator.name} (${creator.username})`;
+  }
+  return creator.name || creator.username || "Creator unavailable";
+}
+
 function entryTemplate(entry) {
   const item = document.createElement("li");
   item.className = `entry-item ${entry.amount < 0 ? "loss" : ""}`;
@@ -615,7 +624,11 @@ function entryTemplate(entry) {
 
   const note = document.createElement("span");
   note.className = "entry-note";
-  note.textContent = entry.note || formatTimestamp(entry);
+  note.textContent = entry.note || "No note";
+
+  const attribution = document.createElement("span");
+  attribution.className = "entry-attribution";
+  attribution.textContent = `${formatTimestamp(entry)} · Added by ${creatorLabel(entry)}`;
 
   const amount = document.createElement("strong");
   amount.className = "entry-amount";
@@ -641,7 +654,7 @@ function entryTemplate(entry) {
   remove.addEventListener("click", () => deleteEntry(entry.id));
 
   actions.append(edit, remove);
-  content.append(date, note);
+  content.append(date, note, attribution);
   item.append(content, amount, actions);
   return item;
 }

@@ -133,6 +133,8 @@ Entries are saved in:
 data/winnings.txt
 ```
 
+New entries include the Microsoft user's display name, username, tenant ID, and object ID. History shows who added each record, and editing a record preserves its original creator. Entries created before user tracking remain compatible and display `Creator unavailable`.
+
 ## Features
 
 - Add daily roulette wins or losses.

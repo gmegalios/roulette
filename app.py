@@ -180,12 +180,27 @@ def parse_entry(line):
     except ValueError:
         return None
 
+    created_by = None
+    if len(parts) >= 7:
+        name = decode_field(parts[5])
+        username = decode_field(parts[6])
+        tenant_id = decode_field(parts[7]) if len(parts) >= 8 else ""
+        object_id = decode_field(parts[8]) if len(parts) >= 9 else ""
+        if name or username or tenant_id or object_id:
+            created_by = {
+                "name": name,
+                "username": username,
+                "tenantId": tenant_id,
+                "objectId": object_id,
+            }
+
     return {
         "id": entry_id,
         "date": date,
         "amount": amount_value,
         "note": decode_field(note),
         "createdAt": created_at,
+        "createdBy": created_by,
     }
 
 
@@ -204,6 +219,7 @@ def read_entries():
 def write_entries(entries):
     lines = []
     for entry in entries:
+        created_by = entry.get("createdBy") or {}
         lines.append(
             "|".join(
                 [
@@ -212,6 +228,10 @@ def write_entries(entries):
                     f'{float(entry["amount"]):.2f}',
                     encode_field(entry.get("note", "")),
                     entry["createdAt"],
+                    encode_field(created_by.get("name", "")),
+                    encode_field(created_by.get("username", "")),
+                    encode_field(created_by.get("tenantId", "")),
+                    encode_field(created_by.get("objectId", "")),
                 ]
             )
         )
@@ -249,6 +269,23 @@ def clean_entry(body):
         "note": note,
         "createdAt": now,
     }, None
+
+
+def creator_from_session(session):
+    user = session.get("user") if session else None
+    if not user:
+        return {
+            "name": "Local user",
+            "username": "",
+            "tenantId": "",
+            "objectId": "",
+        }
+    return {
+        "name": user.get("name", ""),
+        "username": user.get("username", ""),
+        "tenantId": user.get("tenantId", ""),
+        "objectId": user.get("objectId", ""),
+    }
 
 
 class RouletteHandler(SimpleHTTPRequestHandler):
@@ -496,6 +533,7 @@ a{{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;pa
             self.send_json(400, {"error": error})
             return
 
+        entry["createdBy"] = creator_from_session(session)
         entries = read_entries()
         entries.append(entry)
         write_entries(entries)
@@ -530,6 +568,7 @@ a{{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;pa
 
             entry["id"] = original["id"]
             entry["createdAt"] = original["createdAt"]
+            entry["createdBy"] = original.get("createdBy")
             next_entries = [entry if item["id"] == entry_id else item for item in entries]
             write_entries(next_entries)
             self.send_json(200, {"entry": entry})
@@ -556,6 +595,7 @@ a{{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;pa
             self.send_json(400, {"error": error})
             return
 
+        entry["createdBy"] = creator_from_session(session)
         entries = [item for item in read_entries() if item["date"] != date]
         if entry["amount"] != 0 or entry["note"]:
             entries.append(entry)

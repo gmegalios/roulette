@@ -639,6 +639,14 @@ button:hover {
   overflow-wrap: anywhere;
 }
 
+.entry-attribution {
+  display: block;
+  margin-top: 5px;
+  color: rgba(207, 221, 212, 0.78);
+  font-size: 0.78rem;
+  overflow-wrap: anywhere;
+}
+
 .entry-amount {
   font-size: 1.22rem;
   font-weight: 900;
