@@ -5,7 +5,7 @@ The tracker is a React single-page app hosted by GitHub Pages. Users sign in wit
 ## Architecture
 
 - **React/Vite frontend:** `https://gmegalios.github.io/roulette/`
-- **Node API:** runs on the Linux server, normally `https://192.168.101.150:1187`
+- **Node API:** runs on the Linux server, normally `https://192.168.101.150:1188`
 - **PostgreSQL:** accessed only by the Node API
 - **Microsoft SSO:** MSAL Browser authorization-code flow with PKCE
 
@@ -75,7 +75,7 @@ npm run start:api
 Test its public health endpoint from a browser that can reach the Linux server:
 
 ```text
-https://192.168.101.150:1187/health
+https://192.168.101.150:1188/health
 ```
 
 It should return `{"ok":true}`. The certificate must be trusted by every browser that opens the GitHub Page. The API accepts cross-origin calls only from `https://gmegalios.github.io` by default.

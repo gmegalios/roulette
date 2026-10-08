@@ -10,7 +10,7 @@ const required = ["DATABASE_URL", "MICROSOFT_CLIENT_ID", "MICROSOFT_TENANT_ID"];
 const missing = required.filter((name) => !process.env[name]);
 if (missing.length) throw new Error(`Missing environment settings: ${missing.join(", ")}`);
 
-const port = Number(process.env.PORT || 1187);
+const port = Number(process.env.PORT || 1188);
 const tenantId = process.env.MICROSOFT_TENANT_ID;
 const clientId = process.env.MICROSOFT_CLIENT_ID;
 const requiredScope = process.env.MICROSOFT_API_SCOPE || "access_as_user";
