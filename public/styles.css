@@ -88,21 +88,31 @@ h2 {
   display: flex;
   align-items: center;
   gap: 12px;
+  width: fit-content;
   margin-top: 22px;
+  padding: 8px 8px 8px 12px;
   color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(8, 23, 21, 0.32);
   font-size: 0.9rem;
 }
 
-.account-bar a {
-  padding: 7px 10px;
+.account-bar strong {
   color: var(--ink);
-  border: 1px solid var(--line);
+}
+
+.logout-button {
+  padding: 8px 12px;
+  color: var(--felt-deep);
   border-radius: 6px;
+  background: var(--gold);
+  font-weight: 900;
   text-decoration: none;
 }
 
-.account-bar a:hover {
-  background: rgba(255, 255, 255, 0.1);
+.logout-button:hover {
+  background: #ffe497;
 }
 
 .wheel-mark {
