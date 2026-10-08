@@ -37,6 +37,60 @@ button {
   cursor: pointer;
 }
 
+[hidden] {
+  display: none !important;
+}
+
+.auth-shell {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 24px;
+}
+
+.auth-card {
+  width: min(480px, 100%);
+  padding: 42px;
+  text-align: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.auth-card h1 {
+  margin-bottom: 18px;
+  font-size: clamp(2rem, 7vw, 3.6rem);
+}
+
+.auth-card p:not(.eyebrow) {
+  margin: 0 auto 26px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.auth-card button {
+  width: 100%;
+}
+
+.microsoft-mark {
+  display: grid;
+  grid-template-columns: repeat(2, 22px);
+  gap: 3px;
+  width: fit-content;
+  margin: 0 auto 24px;
+}
+
+.microsoft-mark span {
+  width: 22px;
+  height: 22px;
+  background: #f25022;
+}
+
+.microsoft-mark span:nth-child(2) { background: #7fba00; }
+.microsoft-mark span:nth-child(3) { background: #00a4ef; }
+.microsoft-mark span:nth-child(4) { background: #ffb900; }
+
 .app-shell {
   width: min(1120px, calc(100% - 32px));
   margin: 0 auto;
@@ -105,6 +159,7 @@ h2 {
 .logout-button {
   padding: 8px 12px;
   color: var(--felt-deep);
+  border: 0;
   border-radius: 6px;
   background: var(--gold);
   font-weight: 900;
